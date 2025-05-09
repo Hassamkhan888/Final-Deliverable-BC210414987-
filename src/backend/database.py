@@ -1,5 +1,5 @@
 import mysql.connector
-from typing import Iterator, List, Tuple, Dict, Optional, Union
+from typing import Iterator, List, Tuple, Dict, Optional, Union, Any
 from contextlib import contextmanager
 from mysql.connector.connection import MySQLConnection
 from datetime import datetime, timedelta
@@ -33,21 +33,152 @@ def get_db_connection() -> Iterator[MySQLConnection]:
         if conn and conn.is_connected():
             conn.close()
 
+def verify_tables() -> bool:
+    """Verify all required tables exist with correct structure"""
+    return (verify_reservations_table() and 
+            verify_feedback_table() and 
+            verify_orders_table() and
+            verify_support_tickets_table())
+
 def verify_reservations_table() -> bool:
-    """Verify the reservations table exists and has correct structure"""
+    """Verify the reservations table has required columns"""
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
-                SHOW COLUMNS FROM reservations LIKE 'reservation_date'
-            """)
-            if not cursor.fetchone():
-                logger.error("Reservations table missing or has incorrect structure")
+            cursor.execute("SHOW COLUMNS FROM reservations")
+            columns = {column[0] for column in cursor.fetchall()}
+            required_columns = {'id', 'guests', 'reservation_date', 'reservation_time', 'status'}
+            if not required_columns.issubset(columns):
+                missing = required_columns - columns
+                logger.error(f"Reservations table missing columns: {missing}")
                 return False
             return True
     except Exception as e:
         logger.error(f"Error verifying reservations table: {e}")
         return False
+
+def verify_feedback_table() -> bool:
+    """Verify the customer_feedback table exists with required columns"""
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SHOW TABLES LIKE 'customer_feedback'")
+            if not cursor.fetchone():
+                logger.info("Creating customer_feedback table...")
+                cursor.execute("""
+                    CREATE TABLE customer_feedback (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        session_id VARCHAR(255),
+                        customer_name VARCHAR(100),
+                        phone VARCHAR(20),
+                        feedback_text TEXT NOT NULL,
+                        source_platform VARCHAR(50) DEFAULT 'chatbot',
+                        submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        INDEX idx_feedback_session (session_id)
+                    ) ENGINE=InnoDB
+                """)
+                conn.commit()
+                return True
+                
+            cursor.execute("SHOW COLUMNS FROM customer_feedback")
+            columns = {column[0] for column in cursor.fetchall()}
+            required_columns = {'id', 'session_id', 'customer_name', 'phone', 'feedback_text', 'source_platform', 'submitted_at'}
+            if not required_columns.issubset(columns):
+                missing = required_columns - columns
+                logger.error(f"customer_feedback table missing columns: {missing}")
+                return False
+            return True
+    except Exception as e:
+        logger.error(f"Error verifying feedback table: {e}")
+        return False
+
+def verify_support_tickets_table() -> bool:
+    """Verify the support_tickets table exists with required columns"""
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SHOW TABLES LIKE 'support_tickets'")
+            if not cursor.fetchone():
+                logger.info("Creating support_tickets table...")
+                cursor.execute("""
+                    CREATE TABLE support_tickets (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        session_id VARCHAR(255) NOT NULL,
+                        customer_name VARCHAR(100),
+                        phone VARCHAR(20),
+                        user_message TEXT NOT NULL,
+                        issue_category VARCHAR(50) NOT NULL,
+                        status ENUM('open','in_progress','resolved','closed') DEFAULT 'open',
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB
+                """)
+                conn.commit()
+                return True
+                
+            cursor.execute("SHOW COLUMNS FROM support_tickets")
+            columns = {column[0] for column in cursor.fetchall()}
+            required_columns = {'id', 'session_id', 'customer_name', 'phone', 'user_message', 'issue_category', 'status', 'created_at'}
+            if not required_columns.issubset(columns):
+                missing = required_columns - columns
+                logger.error(f"support_tickets table missing columns: {missing}")
+                return False
+            return True
+    except Exception as e:
+        logger.error(f"Error verifying support tickets table: {e}")
+        return False
+
+def verify_orders_table() -> bool:
+    """Verify the orders table has required columns"""
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SHOW COLUMNS FROM orders")
+            columns = {column[0] for column in cursor.fetchall()}
+            required_columns = {'order_id', 'status', 'estimated_time'}
+            if not required_columns.issubset(columns):
+                missing = required_columns - columns
+                logger.error(f"Orders table missing columns: {missing}")
+                return False
+            return True
+    except Exception as e:
+        logger.error(f"Error verifying orders table: {e}")
+        return False
+
+def extract_name_value(name_param: Any) -> Optional[str]:
+    """Extract name value from parameter which might be a string or dict"""
+    if isinstance(name_param, dict) and 'name' in name_param:
+        return name_param['name']
+    elif isinstance(name_param, str):
+        return name_param
+    return None
+
+def submit_customer_feedback(
+    user_id: Optional[str], 
+    name: Any,
+    phone_number: Optional[str],
+    feedback_text: str, 
+    source_platform: str = "chatbot"
+) -> Tuple[bool, str]:
+    """Submit customer feedback to the database with additional fields"""
+    try:
+        # Extract name value if it's a dictionary
+        name_value = extract_name_value(name)
+        
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO customer_feedback 
+                (session_id, customer_name, phone, feedback_text, source_platform)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (user_id, name_value, phone_number, feedback_text, source_platform))
+            conn.commit()
+            return True, "Feedback submitted successfully"
+    except mysql.connector.Error as err:
+        logger.error(f"Database error submitting feedback: {err}")
+        return False, f"Database error: {err}"
+    except Exception as e:
+        logger.error(f"Error submitting feedback: {str(e)}")
+        return False, f"Failed to submit feedback: {str(e)}"
 
 def create_order(items: List[Tuple[str, int]]) -> Tuple[bool, str, Optional[int]]:
     """Create a new order in the database"""
@@ -151,113 +282,132 @@ def get_menu_item_details(item_name: str) -> Tuple[bool, Optional[Dict], str]:
         logger.error(f"Error getting menu item: {e}")
         return False, None, f"database_error:{str(e)}"
 
-def create_support_ticket(session_id: str, issue_type: str, description: str) -> Tuple[bool, str]:
-    """Create a new support ticket in the database"""
+def create_support_ticket(
+    session_id: str, 
+    name: Any,
+    phone_number: Optional[str],
+    issue_type: str, 
+    description: str
+) -> Tuple[bool, str]:
+    """Create a new support ticket in the database with enhanced fields"""
     try:
+        # Extract name value if it's a dictionary
+        name_value = extract_name_value(name)
+        
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO support_tickets 
-                (session_id, user_message, issue_category, status)
-                VALUES (%s, %s, %s, 'open')
-            """, (session_id, description, issue_type))
+                (session_id, customer_name, phone, user_message, issue_category, status)
+                VALUES (%s, %s, %s, %s, %s, 'open')
+            """, (session_id, name_value, phone_number, description, issue_type))
             conn.commit()
             return True, "Support ticket created successfully"
     except Exception as e:
         logger.error(f"Error creating support ticket: {e}")
         return False, f"Failed to create support ticket: {str(e)}"
 
-def create_reservation(session_id: str, guests: int, date_str: str, time_str: str) -> Tuple[bool, str, Optional[int]]:
-    """Create a new reservation in the database with proper date/time formatting"""
+def create_reservation(guests: int, datetime_param: Union[str, dict, list]) -> Tuple[bool, str, Optional[int]]:
+    """Create a new reservation in the database"""
     try:
-        # First verify the table exists
         if not verify_reservations_table():
             return False, "Reservations system unavailable", None
             
-        from datetime import datetime
-        
-        # Parse date (handle multiple formats)
+        # Validate guest count
         try:
-            if 'T' in date_str:  # ISO format
-                reservation_date = datetime.strptime(date_str.split('T')[0], '%Y-%m-%d').date()
-            elif re.match(r'\d{4}-\d{2}-\d{2}', date_str):  # YYYY-MM-DD
-                reservation_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-            else:  # Natural language (e.g., "10 jan")
-                now = datetime.now()
-                try:
-                    parsed_date = datetime.strptime(date_str.strip(), '%d %b')
-                except ValueError:
-                    parsed_date = datetime.strptime(date_str.strip(), '%b %d')
-                
-                # Handle year rollover
-                current_year = now.year
-                if (parsed_date.month < now.month) or \
-                   (parsed_date.month == now.month and parsed_date.day < now.day):
-                    reservation_date = parsed_date.replace(year=current_year + 1).date()
-                else:
-                    reservation_date = parsed_date.replace(year=current_year).date()
-        except ValueError as e:
-            logger.error(f"Date parsing error: {e}")
-            return False, f"Invalid date format: {date_str}", None
+            guests = int(guests)
+            if guests < 1 or guests > 20:
+                return False, "Number of guests must be between 1 and 20", None
+        except (ValueError, TypeError):
+            return False, "Please enter a valid number of guests (1-20)", None
 
-        # Parse time (handle multiple formats)
+        # Parse datetime parameter
+        datetime_str = ""
+        if isinstance(datetime_param, dict) and 'date_time' in datetime_param:
+            datetime_str = datetime_param['date_time']
+        elif isinstance(datetime_param, list) and len(datetime_param) > 0 and isinstance(datetime_param[0], dict) and 'date_time' in datetime_param[0]:
+            datetime_str = datetime_param[0]['date_time']
+        elif isinstance(datetime_param, str):
+            datetime_str = datetime_param
+        else:
+            return False, "Invalid datetime format", None
+
+        # Parse datetime with multiple format support
         try:
-            if 'T' in time_str:  # ISO format
-                time_part = time_str.split('T')[1].split('+')[0]
-                reservation_time = datetime.strptime(time_part, '%H:%M:%S').time()
-            else:  # Natural language time
-                time_str = time_str.lower().strip()
-                if 'am' in time_str or 'pm' in time_str:
-                    time_str = re.sub(r'[^a-z0-9]', '', time_str)  # Clean string
-                    time_obj = datetime.strptime(time_str, '%I%p')
-                    reservation_time = time_obj.time()
-                elif ':' in time_str:
-                    reservation_time = datetime.strptime(time_str, '%H:%M').time()
-                else:
-                    hour = int(time_str)
-                    if hour < 0 or hour > 23:
-                        raise ValueError("Invalid hour")
-                    reservation_time = datetime.strptime(f"{hour}:00", '%H:%M').time()
+            # Add new formats to support 2-digit years (e.g., "10 jan 25 2 pm")
+            natural_formats = [
+                '%d %b %y %I %p', '%d %B %y %I %p',  # 10 Jan 25 10 PM (with 2-digit year)
+                '%d %b %I %p', '%d %B %I %p',  # 10 Jan 10 PM
+                '%b %d %I %p', '%B %d %I %p',  # Jan 10 10 PM
+                '%d %b %H:%M', '%d %B %H:%M',  # 10 Jan 22:00
+                '%b %d %H:%M', '%B %d %H:%M'   # Jan 10 22:00
+            ]
+            
+            dt_obj = None
+            for fmt in natural_formats:
+                try:
+                    dt_obj = datetime.strptime(datetime_str, fmt)
+                    break
+                except ValueError:
+                    continue
+            
+            # If natural formats didn't work, try ISO format
+            if dt_obj is None and 'T' in datetime_str:
+                if '+' in datetime_str:
+                    datetime_str = datetime_str.split('+')[0]
+                dt_obj = datetime.strptime(datetime_str, '%Y-%m-%dT%H:%M:%S')
+            
+            if dt_obj is None:
+                raise ValueError("Unrecognized datetime format")
+
+            # Handle year assignment for dates without year
+            if dt_obj.year == 1900:  # Default year when not specified
+                current_year = datetime.now().year
+                dt_obj = dt_obj.replace(year=current_year)
+                # Handle year rollover if date is in the past
+                if dt_obj < datetime.now():
+                    dt_obj = dt_obj.replace(year=current_year + 1)
+
+            reservation_date = dt_obj.date()
+            reservation_time = dt_obj.time()
+            
         except ValueError as e:
-            logger.error(f"Time parsing error: {e}")
-            return False, f"Invalid time format: {time_str}", None
+            logger.error(f"DateTime parsing error: {e}")
+            return False, "Please use format like '10 Jan 10 AM', '10 Jan 25 2 PM', or 'January 10 2 PM'", None
 
         with get_db_connection() as conn:
             cursor = conn.cursor()
             
-            # Debug before insertion
-            logger.info(f"Inserting reservation: session_id={session_id}, guests={guests}, "
-                       f"date={reservation_date}, time={reservation_time}")
+            # Check for existing reservations
+            cursor.execute("""
+                SELECT 1 FROM reservations 
+                WHERE reservation_date = %s 
+                AND reservation_time = %s
+                LIMIT 1
+            """, (reservation_date, reservation_time.strftime('%H:%M:%S')))
             
-            try:
-                cursor.execute("""
-                    INSERT INTO reservations 
-                    (session_id, guests, reservation_date, reservation_time, status)
-                    VALUES (%s, %s, %s, %s, 'pending')
-                """, (
-                    session_id,
-                    guests,
-                    reservation_date,
-                    reservation_time.strftime('%H:%M:%S')
-                ))
+            if cursor.fetchone():
+                return False, "This time slot is already booked. Please choose another time.", None
+            
+            # Insert new reservation
+            cursor.execute("""
+                INSERT INTO reservations 
+                (guests, reservation_date, reservation_time, status)
+                VALUES (%s, %s, %s, 'confirmed')
+            """, (
+                guests,
+                reservation_date,
+                reservation_time.strftime('%H:%M:%S')
+            ))
+            
+            reservation_id = cursor.lastrowid
+            conn.commit()
+            
+            return True, "Reservation created successfully", reservation_id
                 
-                reservation_id = cursor.lastrowid
-                conn.commit()
-                
-                # Verify insertion
-                cursor.execute("SELECT 1 FROM reservations WHERE id = %s", (reservation_id,))
-                if not cursor.fetchone():
-                    logger.error("Insert failed - no record created")
-                    return False, "Reservation failed", None
-                
-                logger.info(f"Reservation {reservation_id} created successfully")
-                return True, "Reservation created successfully", reservation_id
-                
-            except mysql.connector.Error as err:
-                logger.error(f"Database error: {err}")
-                conn.rollback()
-                return False, f"Database error: {err}", None
-                
+    except mysql.connector.Error as err:
+        logger.error(f"Database error: {err}")
+        return False, f"Database error: {err}", None
     except Exception as e:
         logger.error(f"Error creating reservation: {str(e)}")
         return False, f"Failed to create reservation: {str(e)}", None

@@ -1,5 +1,5 @@
 from fastapi.responses import JSONResponse
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 from datetime import datetime, timedelta
 import random
 from order_utils import format_order_items
@@ -7,18 +7,24 @@ from order_utils import format_order_items
 def error_response(message: str, context: Any = None, status_code: int = 400) -> JSONResponse:
     error_messages = {
         "invalid_order_id": "❌ Please enter a valid Order ID (numbers only)",
-        "order_not_found": f"❌ Order #{context} not found",
-        "order_creation_failed": f"❌ {context}",
+        "order_not_found": f"❌ Order #{context if context else 'N/A'} not found",
+        "order_creation_failed": f"❌ {context if context else 'Order creation failed'}",
         "database_error": "⚠️ Temporary database issue",
-        "system_error": "⚠️ Our systems are busy. Please try again later.",
-        "item_not_found": f"❌ We don't have information about '{context.replace('_', ' ')}'",
-        "support_ticket_failed": f"❌ Failed to create support ticket: {context}",
-        "reservation_failed": f"❌ Reservation failed: {context}"
+        "system_error": f"⚠️ Our systems are busy. {context if context else 'Please try again later.'}",
+        "item_not_found": f"❌ We don't have information about '{context.replace('_', ' ') if context and hasattr(context, 'replace') else 'that item'}'",
+        "support_ticket_failed": f"❌ Failed to create support ticket: {context if context else 'Unknown error'}",
+        "reservation_failed": f"❌ Reservation failed: {context if context else 'Please try again'}",
+        "feedback_failed": f"❌ Failed to submit feedback: {context if context else 'Please try again'}"
     }
+    
+    # Safely get the error message
+    fulfillment_text = error_messages.get(message, "⚠️ Something went wrong")
+    if context is None and ':' in fulfillment_text:
+        fulfillment_text = fulfillment_text.split(':')[0]  # Remove context part if None
     
     return JSONResponse(
         content={
-            "fulfillmentText": error_messages.get(message, "⚠️ Something went wrong"),
+            "fulfillmentText": fulfillment_text,
             "payload": {
                 "richContent": [[{
                     "type": "chips",
@@ -38,7 +44,7 @@ def product_price_response(item: Dict) -> JSONResponse:
             "fulfillmentText": (
                 f"💰 Price Information:\n"
                 f"🍽️ Item: {item['name'].title()}\n"
-                f"💵 Price: ${item['price']:.2f}\n"
+                f"💵 Price: Rs. {item['price']:.2f}\n"
                 f"📦 Category: {item['category']}\n\n"
                 f"Would you like to place an order?"
             ),
@@ -47,9 +53,13 @@ def product_price_response(item: Dict) -> JSONResponse:
                     "type": "chips",
                     "options": [
                         {
-                            "text": "🛒 Place Order", 
+                            "text": "🛒 Place Order",
                             "intent": "PlaceOrder",
                             "parameters": {"dish_items": item['name']}
+                        } if item['in_stock'] else
+                        {
+                            "text": "⏳ Notify when available",
+                            "intent": "Notify_Me"
                         },
                         {
                             "text": "🔙 Back to menu",
@@ -100,7 +110,7 @@ def product_full_response(item: Dict) -> JSONResponse:
             "fulfillmentText": (
                 f"ℹ️ Product Information:\n"
                 f"🍽️ Item: {item['name'].title()}\n"
-                f"💰 Price: ${item['price']:.2f}\n"
+                f"💰 Price: Rs. {item['price']:.2f}\n"
                 f"📦 Status: {'✅ In stock' if item['in_stock'] else '❌ Out of stock'}\n"
                 f"🍽️ Category: {item['category']}\n\n"
                 f"Would you like to place an order?"
@@ -161,13 +171,15 @@ def order_success_response(message: str, order_id: str, items: List[Tuple[str, i
         }
     )
 
-def support_ticket_response(description: str) -> JSONResponse:
+def support_ticket_response(description: str, name: Optional[str] = None) -> JSONResponse:
+    greeting = f"Thanks, {name}! " if name else ""
     return JSONResponse(
         content={
             "fulfillmentText": (
-                f"🛎️ Support ticket created!\n"
-                f"We've received your request about: {description}\n"
-                f"Our team will contact you soon."
+                f"🎫 {greeting}Support ticket created!\n"
+                f"📝 We've received your request about: {description}\n"
+                f"👨‍💻 Our technical team will contact you soon.\n"
+                f"⏱️ Expected response time: within 24 hours"
             ),
             "payload": {
                 "richContent": [[
@@ -175,15 +187,17 @@ def support_ticket_response(description: str) -> JSONResponse:
                         "type": "info",
                         "title": "✅ Support Request Received",
                         "text": [
-                            "Your support ticket has been created",
+                            f"Ticket ID: #{random.randint(1000, 9999)}",
                             f"Issue: {description}",
-                            "We'll contact you shortly"
+                            "Our team will contact you shortly",
+                            "Priority: Medium"
                         ]
                     },
                     {
                         "type": "chips",
                         "options": [
                             {"text": "🛒 Place an order", "intent": "Place_Order"},
+                            {"text": "❓ FAQ", "intent": "FAQ"},
                             {"text": "🏠 Back to main menu", "intent": "Main_Menu"}
                         ]
                     }
@@ -192,10 +206,209 @@ def support_ticket_response(description: str) -> JSONResponse:
         }
     )
 
+def feedback_prompt_name_response() -> JSONResponse:
+    """Response to ask for user's name for feedback"""
+    return JSONResponse(
+        content={
+            "fulfillmentText": "💬 I'd love to hear your feedback! May I have your name, please?",
+            "payload": {
+                "richContent": [[{
+                    "type": "chips",
+                    "options": [
+                        {"text": "⏩ Skip this step", "intent": "GiveCustomerFeedback - skip_name"},
+                        {"text": "🏠 Main Menu", "intent": "Main_Menu"}
+                    ]
+                }]]
+            }
+        }
+    )
+
+def feedback_prompt_phone_response(name: Optional[str] = None) -> JSONResponse:
+    """Response to ask for user's phone number for feedback"""
+    greeting = f"Thanks, {name}! " if name else ""
+    return JSONResponse(
+        content={
+            "fulfillmentText": f"📱 {greeting}Can you share your phone number?",
+            "payload": {
+                "richContent": [[{
+                    "type": "chips",
+                    "options": [
+                        {"text": "⏩ Skip this step", "intent": "GiveCustomerFeedback - skip_phone"},
+                        {"text": "🏠 Main Menu", "intent": "Main_Menu"}
+                    ]
+                }]]
+            }
+        }
+    )
+
+def feedback_prompt_text_response(name: Optional[str] = None) -> JSONResponse:
+    """Response to ask for feedback text"""
+    greeting = f"Thanks{', ' + name if name else ''}! " 
+    return JSONResponse(
+        content={
+            "fulfillmentText": f"📝 {greeting}Please share your feedback.",
+            "payload": {
+                "richContent": [[{
+                    "type": "chips",
+                    "options": [
+                        {"text": "🏠 Main Menu", "intent": "Main_Menu"}
+                    ]
+                }]]
+            }
+        }
+    )
+
+def feedback_submitted_response(name: Optional[str] = None) -> JSONResponse:
+    """Response after successful feedback submission"""
+    greeting = f"Thank you, {name}! " if name else "Thank you! "
+    return JSONResponse(
+        content={
+            "fulfillmentText": f"✨ {greeting}We appreciate your valuable feedback! Your thoughts will help us improve our services.",
+            "payload": {
+                "richContent": [[
+                    {
+                        "type": "info",
+                        "title": "✅ Feedback Received",
+                        "text": [
+                            "✅ Your feedback has been submitted successfully",
+                            "🙏 We're grateful for your input",
+                            "🌟 Your feedback helps us improve"
+                        ]
+                    },
+                    {
+                        "type": "chips",
+                        "options": [
+                            {"text": "🛒 Place an order", "intent": "Place_Order"},
+                            {"text": "📅 Make reservation", "intent": "MakeReservation"},
+                            {"text": "🏠 Main menu", "intent": "Main_Menu"}
+                        ]
+                    }
+                ]]
+            }
+        }
+    )
+
+def feedback_cancelled_response() -> JSONResponse:
+    """Response when user cancels feedback"""
+    return JSONResponse(
+        content={
+            "fulfillmentText": "👍 No problem at all! If you change your mind later, feel free to share your feedback anytime.",
+            "payload": {
+                "richContent": [[{
+                    "type": "chips",
+                    "options": [
+                        {"text": "🛒 Place an order", "intent": "Place_Order"},
+                        {"text": "📅 Make reservation", "intent": "MakeReservation"},
+                        {"text": "🏠 Main menu", "intent": "Main_Menu"}
+                    ]
+                }]]
+            }
+        }
+    )
+
+def technical_support_name_response() -> JSONResponse:
+    """Response to ask for user's name for technical support"""
+    return JSONResponse(
+        content={
+            "fulfillmentText": "🔧 I'm sorry to hear you're experiencing an issue. May I have your name, please?",
+            "payload": {
+                "richContent": [[{
+                    "type": "chips",
+                    "options": [
+                        {"text": "⏩ Skip this step", "intent": "Technical_Support - skip_name"},
+                        {"text": "❌ Cancel", "intent": "Technical_Support - cancel"}
+                    ]
+                }]]
+            }
+        }
+    )
+
+def technical_support_phone_response(name: Optional[str] = None) -> JSONResponse:
+    """Response to ask for user's phone number for technical support"""
+    greeting = f"Thanks, {name}! " if name else ""
+    return JSONResponse(
+        content={
+            "fulfillmentText": f"📱 {greeting}Can you share your phone number in case we need to follow up?",
+            "payload": {
+                "richContent": [[{
+                    "type": "chips",
+                    "options": [
+                        {"text": "⏩ Skip this step", "intent": "Technical_Support - skip_phone"},
+                        {"text": "❌ Cancel", "intent": "Technical_Support - cancel"}
+                    ]
+                }]]
+            }
+        }
+    )
+
+def technical_support_issue_response(name: Optional[str] = None) -> JSONResponse:
+    """Response to ask for issue type"""
+    greeting = f"Thanks{', ' + name if name else ''}! "
+    return JSONResponse(
+        content={
+            "fulfillmentText": f"🔍 {greeting}What type of issue are you facing?",
+            "payload": {
+                "richContent": [[{
+                    "type": "chips",
+                    "options": [
+                        {"text": "📱 Device Problem", "intent": "Technical_Support - issue", "parameters": {"issue": "device"}},
+                        {"text": "🔐 Account Issue", "intent": "Technical_Support - issue", "parameters": {"issue": "account"}},
+                        {"text": "💻 Technical Issue", "intent": "Technical_Support - issue", "parameters": {"issue": "technical"}},
+                        {"text": "🌐 Website Problem", "intent": "Technical_Support - issue", "parameters": {"issue": "website"}},
+                        {"text": "❓ Other", "intent": "Technical_Support - issue", "parameters": {"issue": "general"}}
+                    ]
+                }]]
+            }
+        }
+    )
+
+def technical_support_description_response(issue_type: str) -> JSONResponse:
+    """Response to ask for detailed description of technical issue"""
+    emoji_map = {
+        "device": "📱",
+        "account": "🔐",
+        "technical": "💻",
+        "website": "🌐",
+        "general": "❓"
+    }
+    emoji = emoji_map.get(issue_type, "🔧")
+    
+    return JSONResponse(
+        content={
+            "fulfillmentText": f"{emoji} Please describe your {issue_type} issue in detail.",
+            "payload": {
+                "richContent": [[{
+                    "type": "chips",
+                    "options": [
+                        {"text": "❌ Cancel", "intent": "Technical_Support - cancel"}
+                    ]
+                }]]
+            }
+        }
+    )
+
+def technical_support_cancelled_response() -> JSONResponse:
+    """Response when user cancels technical support request"""
+    return JSONResponse(
+        content={
+            "fulfillmentText": "👍 I understand. If you need help later, feel free to contact our support team anytime.",
+            "payload": {
+                "richContent": [[{
+                    "type": "chips",
+                    "options": [
+                        {"text": "🛒 Place an order", "intent": "Place_Order"},
+                        {"text": "❓ FAQ", "intent": "FAQ"},
+                        {"text": "🏠 Main Menu", "intent": "Main_Menu"}
+                    ]
+                }]]
+            }
+        }
+    )
+
 def ask_for_order_items() -> JSONResponse:
     return JSONResponse(
         content={
-            "fulfillmentText": "What would you like to order today? (Example: '2 chicken biryani and 1 pepsi')",
+            "fulfillmentText": "🍽️ What would you like to order today? (Example: '2 chicken biryani and 1 pepsi')",
             "payload": {
                 "richContent": [[{
                     "type": "chips",
@@ -213,7 +426,7 @@ def ask_for_order_items() -> JSONResponse:
 def ask_for_order_number() -> JSONResponse:
     return JSONResponse(
         content={
-            "fulfillmentText": "Please provide your Order ID (example: '1019')",
+            "fulfillmentText": "🔢 Please provide your Order ID (example: '1019')",
             "payload": {
                 "richContent": [[{
                     "type": "chips",
@@ -227,6 +440,15 @@ def ask_for_order_number() -> JSONResponse:
     )
 
 def order_status_response(order: Dict) -> JSONResponse:
+    status_emoji = {
+        'Pending': "⏳",
+        'Confirmed': "✅",
+        'Preparing': "👨‍🍳",
+        'On the way': "🛵",
+        'Delivered': "🎉",
+        'Cancelled': "❌"
+    }.get(order['status'], "🔄")
+    
     status_msg = {
         'Pending': "⏳ Awaiting confirmation",
         'Confirmed': "✅ Being prepared",
@@ -247,7 +469,7 @@ def order_status_response(order: Dict) -> JSONResponse:
                 "richContent": [[
                     {
                         "type": "info",
-                        "title": f"Order #{order['order_id']} Status",
+                        "title": f"{status_emoji} Order #{order['order_id']} Status",
                         "text": [
                             f"Status: {status_msg}",
                             f"Items: {order['items']}",
@@ -268,39 +490,22 @@ def order_status_response(order: Dict) -> JSONResponse:
 
 def ask_reservation_question(missing_param: str) -> JSONResponse:
     questions = {
-        "guest_count": "How many guests will be dining?",
-        "reserve_date": "What date would you like to book for? (e.g., tomorrow or June 15)",
-        "reserve_time": "What time would you prefer? (e.g., 7pm or 19:30)"
+        "guest_count": "👥 How many guests will be dining? (1-20)",
+        "reserve_date_time": "📅 What date and time would you like to book for? (e.g., '10 Jan 10 AM' or 'January 10 2 PM')"
     }
     return JSONResponse(
         content={"fulfillmentText": questions[missing_param]}
-    )
-
-def confirm_reservation(guests: int, date: str, time: str) -> JSONResponse:
-    return JSONResponse(
-        content={
-            "fulfillmentText": f"📅 Confirm reservation for {guests} guests on {date} at {time}?",
-            "payload": {
-                "richContent": [[{
-                    "type": "chips",
-                    "options": [
-                        {"text": "✅ Confirm", "intent": "ConfirmReservation"},
-                        {"text": "✏️ Edit", "intent": "ModifyReservation"}
-                    ]
-                }]]
-            }
-        }
     )
 
 def reservation_success_response(reservation_id: int, guests: int, date: str, time: str) -> JSONResponse:
     return JSONResponse(
         content={
             "fulfillmentText": (
-                f"🎉 Reservation confirmed! (ID: #{reservation_id})\n"
-                f"👥 Guests: {guests}\n"
+                f"🎉 Reservation confirmed!\n"
                 f"📅 Date: {date}\n"
-                f"⏰ Time: {time}\n\n"
-                f"We'll send a confirmation shortly."
+                f"⏰ Time: {time}\n"
+                f"👥 Guests: {guests}\n"
+                f"Your reservation ID is #{reservation_id}"
             ),
             "payload": {
                 "richContent": [[
@@ -309,16 +514,17 @@ def reservation_success_response(reservation_id: int, guests: int, date: str, ti
                         "title": "✅ Reservation Confirmed",
                         "text": [
                             f"Reservation #{reservation_id} confirmed!",
-                            f"Guests: {guests}",
-                            f"Date: {date}",
-                            f"Time: {time}"
+                            f"📅 Date: {date}",
+                            f"⏰ Time: {time}",
+                            f"👥 Guests: {guests}"
                         ]
                     },
                     {
                         "type": "chips",
                         "options": [
                             {"text": "📅 View my reservations", "intent": "ViewReservations"},
-                            {"text": "🛎️ Special requests", "intent": "SpecialRequests"}
+                            {"text": "🛎️ Special requests", "intent": "SpecialRequests"},
+                            {"text": "🛒 Place an order", "intent": "PlaceOrder"}
                         ]
                     }
                 ]]

@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KarachiBites - Fast Food Restaurant</title>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <header id="header">
+      <div class="container">
+        <div class="logo">
+          <h1>KarachiBites</h1>
+        </div>
+        <nav>
+          <div class="mobile-menu">
+            <i class="fas fa-bars" id="menu-toggle"></i>
+          </div>
+          <ul class="nav-links">
+            <li><a href="#home" class="nav-link">Home</a></li>
+            <li><a href="#menu" class="nav-link">Menu</a></li>
+            <li><a href="#about" class="nav-link">About Us</a></li>
+            <li><a href="#location" class="nav-link">Location</a></li>
+            <li><a href="#contact" class="nav-link">Contact</a></li>
+            <!-- <li>
+              <a href="#" onclick="openChat(); return false;" class="order-btn"
+                >Order Now</a
+              >
+            </li> -->
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <section id="home" class="hero">
+      <div class="hero-content">
+        <h1 class="animate-fade-in">
+          Experience Authentic <span>Pakistani</span> Cuisine
+        </h1>
+        <p class="animate-fade-in delay-1">
+          Bringing the flavors of Karachi to your neighborhood since 2010
+        </p>
+        <div class="hero-buttons animate-fade-in delay-2">
+          <a href="#menu" class="btn primary-btn">View Our Menu</a>
+          <!-- <a href="#contact" class="btn secondary-btn">Book a Table</a> -->
+        </div>
+      </div>
+      <div class="overlay"></div>
+    </section>
+
+    <section id="featured" class="featured">
+      <div class="container">
+        <div class="section-header">
+          <h2>Our Specialties</h2>
+          <p>Discover our most loved dishes</p>
+        </div>
+        <div class="featured-grid">
+          <div class="featured-item">
+            <div class="featured-icon">
+              <i class="fas fa-fire"></i>
+            </div>
+            <h3>Authentic Spices</h3>
+            <p>
+              We use only the freshest spices imported directly from Pakistan.
+            </p>
+          </div>
+          <div class="featured-item">
+            <div class="featured-icon">
+              <i class="fas fa-utensils"></i>
+            </div>
+            <h3>Family Recipes</h3>
+            <p>
+              Our dishes are prepared using traditional recipes passed down
+              through generations.
+            </p>
+          </div>
+          <div class="featured-item">
+            <div class="featured-icon">
+              <i class="fas fa-thumbs-up"></i>
+            </div>
+            <h3>Local Favorite</h3>
+            <p>
+              Voted the best Pakistani restaurant in town three years in a row.
+            </p>
+          </div>
+          <div class="featured-item">
+            <div class="featured-icon">
+              <i class="fas fa-truck"></i>
+            </div>
+            <h3>Fast Delivery</h3>
+            <p>
+              Enjoy our delicious food in the comfort of your home with quick
+              delivery.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="menu" class="menu">
+      <div class="container">
+        <div class="section-header">
+          <h2>Our Menu</h2>
+          <p>Taste the authentic flavors of Karachi</p>
+        </div>
+
+        <div class="menu-category">
+          <h3>Main Courses</h3>
+          <div class="menu-grid">
+            <div class="menu-item">
+              <div class="menu-img">
+                <img
+                  src="https://images.pexels.com/photos/7353380/pexels-photo-7353380.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
+                  alt="Karachi Special Biryani"
+                />
+              </div>
+              <div class="menu-details">
+                <div class="menu-title">
+                  <h4>Karachi Special Biryani</h4>
+                  <span class="price">Rs. 350</span>
+                </div>
+                <p>
+                  Fragrant basmati rice cooked with tender marinated meat,
+                  aromatic spices, and herbs.
+                </p>
+                <!-- <a href="#" class="menu-btn">Order Now</a> -->
+              </div>
+            </div>
+
+            <div class="menu-item">
+              <div class="menu-img">
+                <img
+                  src="https://images.pexels.com/photos/2233729/pexels-photo-2233729.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
+                  alt="Seekh Kebab Platter"
+                />
+              </div>
+              <div class="menu-details">
+                <div class="menu-title">
+                  <h4>Seekh Kebab Platter</h4>
+                  <span class="price">Rs. 400</span>
+                </div>
+                <p>
+                  Juicy minced meat kebabs grilled to perfection, served with
+                  mint chutney and naan.
+                </p>
+                <!-- <a href="#" class="menu-btn">Order Now</a> -->
+              </div>
+            </div>
+
+            <div class="menu-item">
+              <div class="menu-img">
+                <img
+                  src="https://images.pexels.com/photos/2679501/pexels-photo-2679501.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
+                  alt="Chicken Karahi"
+                />
+              </div>
+              <div class="menu-details">
+                <div class="menu-title">
+                  <h4>Chicken Karahi</h4>
+                  <span class="price">Rs. 450</span>
+                </div>
+                <p>
+                  Tender chicken pieces cooked in a spicy tomato-based gravy
+                  with green chilies and ginger.
+                </p>
+                <!-- <a href="#" class="menu-btn">Order Now</a> -->
+              </div>
+            </div>
+
+            <div class="menu-item">
+              <div class="menu-img">
+                <img
+                  src="https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
+                  alt="Chapli Kebab"
+                />
+              </div>
+              <div class="menu-details">
+                <div class="menu-title">
+                  <h4>Chapli Kebab</h4>
+                  <span class="price">Rs. 300</span>
+                </div>
+                <p>
+                  Flavorful minced meat patties with aromatic spices, tomatoes,
+                  and green chilies.
+                </p>
+                <!-- <a href="#" class="menu-btn">Order Now</a> -->
+              </div>
+            </div>
+
+            <div class="menu-item">
+              <div class="menu-img">
+                <img
+                  src="https://images.pexels.com/photos/845811/pexels-photo-845811.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                  alt="Pizza"
+                />
+              </div>
+              <div class="menu-details">
+                <div class="menu-title">
+                  <h4>Pizza</h4>
+                  <span class="price">Rs. 1300</span>
+                </div>
+                <p>
+                  Flavorful minced meat, blended with spices, tomatoes, and
+                  chilies.
+                </p>
+                <!-- <a href="#" class="menu-btn">Order Now</a> -->
+              </div>
+            </div>
+
+            <div class="menu-item">
+              <div class="menu-img">
+                <img
+                  src="https://images.pexels.com/photos/17321008/pexels-photo-17321008/free-photo-of-a-tray-of-fried-fish-with-lemon-wedges-and-herbs.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                  alt="Fish"
+                />
+              </div>
+              <div class="menu-details">
+                <div class="menu-title">
+                  <h4>Fried Fish</h4>
+                  <span class="price">Rs. 300</span>
+                </div>
+                <p>Tender fish fillets, deep-fried to a perfect crunch.</p>
+                <!-- <a href="#" class="menu-btn">Order Now</a> -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-category">
+          <h3>Desserts</h3>
+          <div class="menu-grid">
+            <div class="menu-item">
+              <div class="menu-img">
+                <img
+                  src="https://images.pexels.com/photos/11887844/pexels-photo-11887844.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
+                  alt="Gulab Jamun"
+                />
+              </div>
+              <div class="menu-details">
+                <div class="menu-title">
+                  <h4>Gulab Jamun</h4>
+                  <span class="price">Rs. 150</span>
+                </div>
+                <p>
+                  Soft, spongy milk solids balls soaked in rose-flavored sugar
+                  syrup.
+                </p>
+                <a href="#" class="menu-btn">Order Now</a>
+              </div>
+            </div>
+
+            <div class="menu-item">
+              <div class="menu-img">
+                <img
+                  src="https://images.pexels.com/photos/6577065/pexels-photo-6577065.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
+                  alt="Kheer"
+                />
+              </div>
+              <div class="menu-details">
+                <div class="menu-title">
+                  <h4>Kheer</h4>
+                  <span class="price">Rs. 200</span>
+                </div>
+                <p>
+                  Creamy rice pudding with milk, cardamom, and nuts, garnished
+                  with saffron.
+                </p>
+                <a href="#" class="menu-btn">Order Now</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view-all">
+          <!-- <a href="#" class="btn primary-btn">View Full Menu</a> -->
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="about">
+      <div class="container">
+        <div class="section-header">
+          <h2>Our Story</h2>
+          <p>The journey behind KarachiBites</p>
+        </div>
+
+        <div class="about-grid">
+          <div class="about-content">
+            <h3>From Karachi to Your Neighborhood</h3>
+            <p>
+              Founded in 2010, KarachiBites began as a small family-owned
+              restaurant with a simple mission: to bring the authentic flavors
+              of Pakistan to our community. Our founder, Ahmed Khan, brought
+              with him treasured family recipes that had been passed down for
+              generations.
+            </p>
+
+            <p>
+              What started as a humble street food stall has now grown into one
+              of the most beloved Pakistani restaurants in the area. Despite our
+              growth, we remain committed to our original values: using only the
+              freshest ingredients, preparing everything in-house, and treating
+              every customer like family.
+            </p>
+
+            <p>
+              Our chefs have mastered the art of balancing spices and flavors to
+              create dishes that are both authentic and accessible. Whether
+              you're a longtime fan of Pakistani cuisine or trying it for the
+              first time, we promise an unforgettable culinary experience.
+            </p>
+
+            <div class="values-grid">
+              <div class="value-item">
+                <div class="value-icon">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <h4>Quality</h4>
+                <p>We never compromise on the quality of our ingredients.</p>
+              </div>
+
+              <div class="value-item">
+                <div class="value-icon">
+                  <i class="fas fa-heart"></i>
+                </div>
+                <h4>Passion</h4>
+                <p>Every dish is prepared with love and passion.</p>
+              </div>
+
+              <div class="value-item">
+                <div class="value-icon">
+                  <i class="fas fa-history"></i>
+                </div>
+                <h4>Tradition</h4>
+                <p>We honor traditional Pakistani cooking techniques.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="about-gallery">
+            <div class="gallery-item large">
+              <img
+                src="https://images.pexels.com/photos/696218/pexels-photo-696218.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
+                alt="Restaurant interior"
+              />
+            </div>
+            <div class="gallery-item">
+              <img
+                src="https://images.pexels.com/photos/2403391/pexels-photo-2403391.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
+                alt="Chef preparing food"
+              />
+            </div>
+            <div class="gallery-item">
+              <img
+                src="https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
+                alt="Spices and ingredients"
+              />
+            </div>
+            <div class="gallery-item">
+              <img
+                src="https://images.pexels.com/photos/3184183/pexels-photo-3184183.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
+                alt="Happy customers"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="location" class="location">
+      <div class="container">
+        <div class="section-header">
+          <h2>Find Us</h2>
+          <p>Visit us for an unforgettable dining experience</p>
+        </div>
+
+        <div class="location-grid">
+          <div class="map-container">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3619.7731345672997!2d67.0686!3d24.8598!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjTCsDUxJzM1LjMiTiA2N8KwMDQnMDcuMCJF!5e0!3m2!1sen!2sus!4v1625126354857!5m2!1sen!2sus"
+              width="100%"
+              height="100%"
+              style="border: 0"
+              allowfullscreen=""
+              loading="lazy"
+              title="Restaurant location"
+            >
+            </iframe>
+          </div>
+
+          <div class="location-details">
+            <div class="detail-item">
+              <div class="detail-icon">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="detail-content">
+                <h3>Address</h3>
+                <p>123 Food Street, Defence View Phase 2</p>
+                <p>Karachi, Pakistan</p>
+                <a
+                  href="https://goo.gl/maps/KVxZM8H2XYmQc9r56"
+                  target="_blank"
+                  class="direction-link"
+                  >Get Directions</a
+                >
+              </div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="detail-content">
+                <h3>Opening Hours</h3>
+                <p><span>Monday - Thursday:</span> 11:00 AM - 10:00 PM</p>
+                <p><span>Friday - Saturday:</span> 11:00 AM - 11:00 PM</p>
+                <p><span>Sunday:</span> 12:00 PM - 9:00 PM</p>
+              </div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-icon">
+                <i class="fas fa-phone-alt"></i>
+              </div>
+              <div class="detail-content">
+                <h3>Contact</h3>
+                <p><a href="tel:+923458558885">+92 345 855 8885</a></p>
+                <p>
+                  <a href="mailto:karachibities246@gmail.com"
+                    >karachibities246@gmail.com</a
+                  >
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact">
+      <div class="container">
+        <div class="section-header">
+          <h2>Contact Us</h2>
+          <p>We'd love to hear from you</p>
+        </div>
+
+        <div class="contact-grid">
+          <div class="contact-form">
+            <h3>Send us a Message</h3>
+            <form id="contactForm">
+              <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" required />
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required />
+              </div>
+
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" />
+              </div>
+
+              <div class="form-group">
+                <label for="message">Your Message</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  rows="5"
+                  required
+                ></textarea>
+              </div>
+
+              <button type="submit" class="btn primary-btn">
+                Send Message
+              </button>
+            </form>
+          </div>
+
+          <div class="contact-info">
+            <h3>Get in Touch</h3>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="info-content">
+                <h4>Address</h4>
+                <p>123 Food Street, Defence View Phase 2, Karachi, Pakistan</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-phone-alt"></i>
+              </div>
+              <div class="info-content">
+                <h4>Phone</h4>
+                <p>+92 345 855 8885</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div class="info-content">
+                <h4>Email</h4>
+                <p>karachibities246@gmail.com</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="info-content">
+                <h4>Opening Hours</h4>
+                <p>Monday - Thursday: 11:00 AM - 10:00 PM</p>
+                <p>Friday - Saturday: 11:00 AM - 11:00 PM</p>
+                <p>Sunday: 12:00 PM - 9:00 PM</p>
+              </div>
+            </div>
+
+            <div class="social-links">
+              <h4>Follow Us</h4>
+              <div class="social-icons">
+                <a href="#" target="_blank"
+                  ><i class="fab fa-facebook-f"></i
+                ></a>
+                <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+                <a href="#" target="_blank"><i class="fab fa-youtube"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-about">
+            <h3>KarachiBites</h3>
+            <p>
+              Experience authentic Pakistani street food flavors with a modern
+              twist. Our family recipes bring the taste of Karachi to your
+              neighborhood.
+            </p>
+          </div>
+
+          <div class="footer-links">
+            <h3>Quick Links</h3>
+            <ul>
+              <li><a href="#home">Home</a></li>
+              <li><a href="#menu">Menu</a></li>
+              <li><a href="#about">About Us</a></li>
+              <li><a href="#location">Location</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-hours">
+            <h3>Opening Hours</h3>
+            <p><span>Monday - Thursday:</span> 11:00 AM - 10:00 PM</p>
+            <p><span>Friday - Saturday:</span> 11:00 AM - 11:00 PM</p>
+            <p><span>Sunday:</span> 12:00 PM - 9:00 PM</p>
+          </div>
+
+          <div class="footer-contact">
+            <h3>Contact Us</h3>
+            <p>
+              <i class="fas fa-map-marker-alt"></i> 123 Food Street, Defence
+              View Phase 2, Karachi
+            </p>
+            <p><i class="fas fa-phone-alt"></i> +92 345 855 8885</p>
+            <p><i class="fas fa-envelope"></i> karachibities246@gmail.com</p>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p>
+            &copy; <span id="current-year">2023</span> KarachiBites. All rights
+            reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Dialogflow Messenger Chatbot -->
+    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+    <df-messenger
+      intent="WELCOME"
+      chat-title="KarachiBites"
+      agent-id="8ee5c500-0b88-4257-9d88-f3d1b9d6ecaf"
+      language-code="en"
+    >
+    </df-messenger>
+
+    <!-- <script>
+      function openChat() {
+        const dfMessenger = document.querySelector("df-messenger");
+        if (!dfMessenger) return;
+
+        const tryOpen = () => {
+          const openButton = dfMessenger.shadowRoot
+            ?.querySelector("df-messenger-chat-icon")
+            ?.shadowRoot?.querySelector("button");
+
+          if (openButton) {
+            openButton.click();
+          } else {
+            // Try again after 100ms
+            setTimeout(tryOpen, 100);
+          }
+        };
+
+        tryOpen();
+      }
+    </script> -->
+
+    <script>
+      // Update current year in footer
+      document.getElementById("current-year").textContent =
+        new Date().getFullYear();
+
+      // Mobile menu toggle
+      const menuToggle = document.getElementById("menu-toggle");
+      const navLinks = document.querySelector(".nav-links");
+
+      menuToggle.addEventListener("click", () => {
+        navLinks.classList.toggle("active");
+        menuToggle.classList.toggle("fa-times");
+      });
+
+      // Smooth scrolling for navigation links
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
+
+          // Close mobile menu if open
+          navLinks.classList.remove("active");
+          menuToggle.classList.remove("fa-times");
+
+          const targetId = this.getAttribute("href");
+          const targetSection = document.querySelector(targetId);
+
+          window.scrollTo({
+            top: targetSection.offsetTop - 80,
+            behavior: "smooth",
+          });
+        });
+      });
+
+      // Header background change on scroll
+      window.addEventListener("scroll", () => {
+        const header = document.getElementById("header");
+        if (window.scrollY > 50) {
+          header.classList.add("scrolled");
+        } else {
+          header.classList.remove("scrolled");
+        }
+      });
+
+      // Form submission handler
+      const contactForm = document.getElementById("contactForm");
+
+      contactForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        // Here you would normally send the form data to a server
+        const formData = {
+          name: document.getElementById("name").value,
+          email: document.getElementById("email").value,
+          phone: document.getElementById("phone").value,
+          message: document.getElementById("message").value,
+        };
+
+        console.log("Form submitted:", formData);
+
+        // Reset form after submission
+        contactForm.reset();
+
+        // Show success message (you can replace this with a proper UI feedback)
+        alert("Thank you for your message! We will get back to you soon.");
+      });
+    </script>
+  </body>
+</html>
