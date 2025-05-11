@@ -149,4 +149,24 @@ Here are some screenshots of the KarachiBites Chatbot in action:
 
 ![image](https://github.com/user-attachments/assets/538ebfee-921c-418f-a96c-2e0b0ecb518c)
 ![image](https://github.com/user-attachments/assets/9852da2e-a764-4aa9-9e9f-af460b216b57)
+![image](https://github.com/user-attachments/assets/cfb9df72-6a14-44d6-a2fc-c91f87ba144f)
+![image](https://github.com/user-attachments/assets/0169711c-8ffb-44ac-8290-4f7732890586)
+![image](https://github.com/user-attachments/assets/964c5ea3-be8a-4419-9184-3bd280bde0fc)
+![image](https://github.com/user-attachments/assets/5231384c-420f-42b0-85fc-3cf13fcd67b5)
+![image](https://github.com/user-attachments/assets/df8f69aa-6768-4b88-8931-fe5ea231c67d)
+![image](https://github.com/user-attachments/assets/b3538d2f-27b9-4fe6-90e7-e5abe163993b)
+![image](https://github.com/user-attachments/assets/46522216-9bc6-4b47-88bb-d1795eab6baa)
+![image](https://github.com/user-attachments/assets/fd8524a4-46a1-4718-abc1-80ab8d1abd95)
+![image](https://github.com/user-attachments/assets/c6490aae-c495-46e7-8285-1359116a1546)
+![image](https://github.com/user-attachments/assets/106c9aad-548a-4ac9-894b-ff85d68cdad9)
+
+
+
+
+
+
+
+
+
+
 
