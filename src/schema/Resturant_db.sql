@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE TABLE IF NOT EXISTS order_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
+    customer_name VARCHAR(100),
+    phone VARCHAR(20),
     food_item VARCHAR(100) NOT NULL,
     quantity INT NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -76,6 +78,8 @@ CREATE TABLE IF NOT EXISTS support_tickets (
 
 CREATE TABLE reservations (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_name VARCHAR(100),
+    phone VARCHAR(20),
     guests INT NOT NULL,
     reservation_date DATE NOT NULL,
     reservation_time TIME NOT NULL,
@@ -98,7 +102,7 @@ CREATE TABLE IF NOT EXISTS customer_feedback (
 
 
 
-select * From reservations;
+select date_format(created_at, "%d-%m-%Y") From reservations;
 Select * From support_tickets;
 Select * From menu_items;
 SELECT * FROM orders;
@@ -106,3 +110,5 @@ SELECT * FROM order_items;
 Select * from customer_feedback;
 
 
+DROP TABLE order_items;
+DROP TABLE reservations;

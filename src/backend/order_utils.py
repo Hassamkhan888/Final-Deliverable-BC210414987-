@@ -8,12 +8,15 @@ VALID_MENU_ITEMS = {
     # Main Course - Original Items
     'biryani', 'chicken_biryani', 'beef_biryani', 'mutton_biryani',
     'karahi', 'chicken_karahi', 'beef_karahi', 'mutton_karahi',
-    'burger', 'beef_burger', 'chicken_burger', 'zinger_burger',
+    'burger', 'burgers', 'beef_burger', 'chicken_burger', 'zinger_burger',
     'kebab', 'seekh_kebab', 'beef_kebab', 'chicken_kebab', 'chapli_kebab',
     'naan', 'garlic_naan', 'tandoori_naan',
     
     # Main Course - New Items
     'nihari', 'haleem', 'paya', 'fish_fry', 'malai_boti',
+    
+    # Pizza Items - ADD THESE!
+    'pizza', 'chicken_pizza', 'beef_pizza', 'cheese_pizza', 'margherita_pizza', 'veggie_pizza',
     
     # Desserts
     'kheer', 'jalebi', 'rasmalai', 'chocolate_lava_cake',
@@ -24,18 +27,27 @@ VALID_MENU_ITEMS = {
     # Special Deals
     'biryani_combo', 'bbq_platter', 'nihari_combo', 'zinger_combo', 'dessert_combo'
 }
-
 def normalize_item_name(item_name: str) -> str:
     """Normalize item names to standard database format"""
     item_name = item_name.lower().strip()
     item_name = re.sub(r'\s+and$', '', item_name)
-    item_name = re.sub(r'\s+', '_', item_name)  # Replace spaces with underscores
+    item_name = re.sub(r'\s+', '_', item_name)
     
     item_mapping = {
         # Basics
         'biriyani': 'biryani', 'biryan': 'biryani', 'bryani': 'biryani',
         'chickenbiryani': 'chicken_biryani',
         'beefburger': 'beef_burger',
+        
+        # Burger variations
+        'burgers': 'burger',
+        'hamburger': 'burger',
+        'hamburgers': 'burger',
+        'cheeseburger': 'burger',
+        'cheeseburgers': 'burger',
+        'beef_burgers': 'beef_burger',
+        'chicken_burgers': 'chicken_burger',
+        'zinger_burgers': 'zinger_burger',
         
         # Beverages
         'cola': 'pepsi', 'cold_drink': 'pepsi', 'pepis': 'pepsi',
@@ -65,11 +77,9 @@ def normalize_item_name(item_name: str) -> str:
     if item_name in VALID_MENU_ITEMS:
         return item_name
     
-    # Check if it's in our mapping
     if item_name in item_mapping:
         return item_mapping[item_name]
     
-    # Check if it's a partial match to any valid item
     for valid_item in VALID_MENU_ITEMS:
         if item_name in valid_item or valid_item in item_name:
             return valid_item
@@ -78,7 +88,6 @@ def normalize_item_name(item_name: str) -> str:
 
 def extract_dish_item(user_input: str) -> Optional[str]:
     """Extract dish item from user input with improved price query handling"""
-    # Handle price queries first
     if is_price_query(user_input):
         price_pattern = r'(?:price of|cost of|how much is|tell me the price of)\s+([a-zA-Z\s]+)'
         match = re.search(price_pattern, user_input.lower())
@@ -86,7 +95,6 @@ def extract_dish_item(user_input: str) -> Optional[str]:
             item = match.group(1).strip()
             return normalize_item_name(item)
     
-    # Handle other patterns
     patterns = [
         r'(?:is|are)\s+([a-zA-Z\s]+)\s+(?:available|in stock|left)',
         r'(?:tell me about|what is|what\'s)\s+([a-zA-Z\s]+)',
@@ -103,7 +111,7 @@ def extract_dish_item(user_input: str) -> Optional[str]:
     return None
 
 def is_price_query(text: str) -> bool:
-    """Check if user is asking about price (more precise)"""
+    """Check if user is asking about price"""
     price_phrases = [
         'price of', 'cost of', 'how much is', 
         'what is the price', "what's the price",
@@ -174,28 +182,122 @@ def extract_item_and_intent(text: str) -> Tuple[Optional[str], Optional[str]]:
     return item, None
 
 def extract_order_details(user_input: str) -> List[Tuple[str, int]]:
-    """Extract order details from user input"""
-    pattern = r'(\d+)\s+([a-zA-Z_\s]+?)(?=\s*\d+|and\s*\d+|$)'
-    matches = re.finditer(pattern, user_input.lower())
+    """Extract order details from user input - SIMPLIFIED DEBUG VERSION"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    print(f"DEBUG: Original input: '{user_input}'")
+    
+    user_input = user_input.lower().strip()
+    
+    # Remove common prefixes
+    user_input = re.sub(r'^(i want to order|i want|order|get me|give me)\s+', '', user_input)
+    print(f"DEBUG: After cleaning: '{user_input}'")
+    
+    # SIMPLE APPROACH: Split by spaces and look for number-word patterns
+    words = user_input.split()
+    print(f"DEBUG: Words: {words}")
     
     items = []
-    for match in matches:
-        try:
-            quantity = int(match.group(1))
-            item = match.group(2).strip()
-            item = re.sub(r'\s+and$', '', item).strip()
-            if quantity > 0 and item:
-                items.append((item, quantity))
-        except (ValueError, IndexError):
-            continue
+    i = 0
     
-    combined_items: Dict[str, int] = {}
+    while i < len(words):
+        print(f"DEBUG: Checking word {i}: '{words[i]}'")
+        
+        if words[i].isdigit():
+            quantity = int(words[i])
+            print(f"DEBUG: Found quantity: {quantity}")
+            i += 1
+            
+            # Collect the next word(s) as item name
+            item_words = []
+            while i < len(words) and not words[i].isdigit():
+                if words[i] not in ['and', 'please', 'thanks', 'thank', 'you']:
+                    item_words.append(words[i])
+                    print(f"DEBUG: Adding word to item: '{words[i]}'")
+                else:
+                    print(f"DEBUG: Skipping connector word: '{words[i]}'")
+                i += 1
+            
+            if item_words:
+                item_name = ' '.join(item_words)
+                print(f"DEBUG: Constructed item name: '{item_name}'")
+                
+                normalized_item = normalize_item_name(item_name)
+                print(f"DEBUG: Normalized item: '{normalized_item}'")
+                
+                print(f"DEBUG: Is '{normalized_item}' in VALID_MENU_ITEMS? {normalized_item in VALID_MENU_ITEMS}")
+                
+                if normalized_item in VALID_MENU_ITEMS:
+                    items.append((normalized_item, quantity))
+                    print(f"DEBUG: Added to items: {quantity} {normalized_item}")
+                else:
+                    print(f"DEBUG: REJECTED - '{normalized_item}' not in valid items")
+                    print(f"DEBUG: Valid items are: {list(VALID_MENU_ITEMS)[:10]}...")  # Show first 10
+        else:
+            print(f"DEBUG: '{words[i]}' is not a digit, moving to next word")
+            i += 1
+    
+    print(f"DEBUG: Final items before combining: {items}")
+    
+    # Combine duplicate items
+    combined_items = {}
     for item_name, quantity in items:
-        normalized_name = normalize_item_name(item_name)
-        if normalized_name:
-            combined_items[normalized_name] = combined_items.get(normalized_name, 0) + quantity
+        if item_name in combined_items:
+            combined_items[item_name] += quantity
+        else:
+            combined_items[item_name] = quantity
     
-    return list(combined_items.items())
+    final_items = list(combined_items.items())
+    print(f"DEBUG: Final combined items: {final_items}")
+    
+    return final_items
+
+
+# IMPORTANT: Make sure pizza is in your VALID_MENU_ITEMS
+# Add this to test if pizza is the issue:
+def check_pizza_in_menu():
+    """Check if pizza variants are in VALID_MENU_ITEMS"""
+    pizza_variants = ['pizza', 'chicken_pizza', 'beef_pizza', 'cheese_pizza']
+    print("Checking pizza in VALID_MENU_ITEMS:")
+    for variant in pizza_variants:
+        print(f"  {variant}: {'YES' if variant in VALID_MENU_ITEMS else 'NO'}")
+    
+    print(f"\nAll VALID_MENU_ITEMS: {sorted(VALID_MENU_ITEMS)}")
+
+
+# Test function with detailed output
+def test_specific_case():
+    """Test the specific failing case"""
+    print("="*60)
+    print("TESTING: 'order 2 biryani 2 pepsi 2 pizza'")
+    print("="*60)
+    
+    # First check if all items are in the valid menu
+    check_pizza_in_menu()
+    print("\n")
+    
+    # Test the parsing
+    test_input = "order 2 biryani 2 pepsi 2 pizza"
+    result = extract_order_details(test_input)
+    
+    print(f"\nFINAL RESULT: {result}")
+    print(f"Number of items parsed: {len(result)}")
+    
+    if len(result) < 3:
+        print("❌ PROBLEM: Only got", len(result), "items instead of 3")
+        print("This means either:")
+        print("1. The parsing logic is wrong, OR")
+        print("2. Some items are not in VALID_MENU_ITEMS")
+    else:
+        print("✅ SUCCESS: Got all 3 items!")
+
+
+# Run the test
+if __name__ == "__main__":
+    test_specific_case()
+
+# Update your VALID_MENU_ITEMS by adding these items
 
 def format_order_items(items: List[Tuple[str, int]]) -> str:
     """Format order items for display"""
@@ -203,52 +305,53 @@ def format_order_items(items: List[Tuple[str, int]]) -> str:
         return ""
     
     item_units = {
-    # Main dishes
-    "biryani": "plate", 
-    "chicken_biryani": "plate", 
-    "beef_biryani": "plate", 
-    "mutton_biryani": "plate",
-    "karahi": "bowl", 
-    "chicken_karahi": "bowl", 
-    "mutton_karahi": "bowl",
-    "burger": "burger", 
-    "beef_burger": "burger", 
-    "zinger_burger": "burger",
-    "seekh_kebab": "skewer", 
-    "chapli_kebab": "piece", 
-    "shami_kebab": "piece",
-    "naan": "naan", 
-    "garlic_naan": "naan", 
-    "tandoori_naan": "naan",
-    "nihari": "bowl", 
-    "haleem": "bowl", 
-    "paya": "bowl",
-    "fish_fry": "piece", 
-    "malai_boti": "piece",
+        # Main dishes
+        "biryani": "plate", 
+        "chicken_biryani": "plate", 
+        "beef_biryani": "plate", 
+        "mutton_biryani": "plate",
+        "karahi": "bowl", 
+        "chicken_karahi": "bowl", 
+        "mutton_karahi": "bowl",
+        "burger": "burger", 
+        "beef_burger": "burger", 
+        "zinger_burger": "burger",
+        "seekh_kebab": "skewer", 
+        "chapli_kebab": "piece", 
+        "shami_kebab": "piece",
+        "naan": "naan", 
+        "garlic_naan": "naan", 
+        "tandoori_naan": "naan",
+        "nihari": "bowl", 
+        "haleem": "bowl", 
+        "paya": "bowl",
+        "fish_fry": "piece", 
+        "malai_boti": "piece",
+        
+        # Appetizers
+        "samosa": "piece", 
+        "pakora": "plate", 
+        "fruit_chaat": "bowl",
+        
+        # Desserts
+        "kheer": "bowl", 
+        "jalebi": "piece", 
+        "rasmalai": "piece", 
+        "chocolate_lava_cake": "slice",
+        
+        # Beverages
+        "pepsi": "bottle", 
+        "lassi": "glass", 
+        "rooh_afza": "glass",
+        
+        # Special deals
+        "biryani_combo": "combo", 
+        "bbq_platter": "platter", 
+        "nihari_combo": "combo", 
+        "zinger_combo": "combo", 
+        "dessert_combo": "combo"
+    }
     
-    # Appetizers
-    "samosa": "piece", 
-    "pakora": "plate", 
-    "fruit_chaat": "bowl",
-    
-    # Desserts
-    "kheer": "bowl", 
-    "jalebi": "piece", 
-    "rasmalai": "piece", 
-    "chocolate_lava_cake": "slice",
-    
-    # Beverages
-    "pepsi": "bottle", 
-    "lassi": "glass", 
-    "rooh_afza": "glass",
-    
-    # Special deals
-    "biryani_combo": "combo", 
-    "bbq_platter": "platter", 
-    "nihari_combo": "combo", 
-    "zinger_combo": "combo", 
-    "dessert_combo": "combo"
-}
     formatted = []
     for name, qty in items:
         display_name = name.replace('_', ' ')
@@ -276,9 +379,8 @@ def extract_support_request_details(text: str) -> Tuple[Optional[str], Optional[
     }
     
     text_lower = text.lower()
-    issue_type = 'general'  # Default issue type
+    issue_type = 'general'
     
-    # Identify the issue type based on keywords
     for category, keywords in issue_types.items():
         if any(keyword in text_lower for keyword in keywords):
             issue_type = category

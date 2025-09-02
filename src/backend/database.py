@@ -7,6 +7,8 @@ import random
 import logging
 import re
 
+
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -38,6 +40,7 @@ def verify_tables() -> bool:
     return (verify_reservations_table() and 
             verify_feedback_table() and 
             verify_orders_table() and
+            verify_order_items_table() and
             verify_support_tickets_table())
 
 def verify_reservations_table() -> bool:
@@ -45,9 +48,30 @@ def verify_reservations_table() -> bool:
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
+            
+            # Check if table exists
+            cursor.execute("SHOW TABLES LIKE 'reservations'")
+            if not cursor.fetchone():
+                logger.info("Creating reservations table...")
+                cursor.execute("""
+                    CREATE TABLE reservations (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        customer_name VARCHAR(100),
+                        phone VARCHAR(20),
+                        guests INT NOT NULL,
+                        reservation_date DATE NOT NULL,
+                        reservation_time TIME NOT NULL,
+                        status VARCHAR(20) DEFAULT 'confirmed',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                """)
+                conn.commit()
+                return True
+            
             cursor.execute("SHOW COLUMNS FROM reservations")
             columns = {column[0] for column in cursor.fetchall()}
-            required_columns = {'id', 'guests', 'reservation_date', 'reservation_time', 'status'}
+            required_columns = {'id', 'customer_name', 'phone', 'guests', 'reservation_date', 'reservation_time', 'status'}
             if not required_columns.issubset(columns):
                 missing = required_columns - columns
                 logger.error(f"Reservations table missing columns: {missing}")
@@ -55,6 +79,50 @@ def verify_reservations_table() -> bool:
             return True
     except Exception as e:
         logger.error(f"Error verifying reservations table: {e}")
+        return False
+
+def verify_order_items_table() -> bool:
+    """Verify the order_items table has required columns including customer info"""
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            
+            # Check if table exists
+            cursor.execute("SHOW TABLES LIKE 'order_items'")
+            if not cursor.fetchone():
+                logger.info("Creating order_items table...")
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS order_items (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        order_id INT NOT NULL,
+                        customer_name VARCHAR(100),
+                        phone VARCHAR(20),
+                        food_item VARCHAR(100) NOT NULL,
+                        quantity INT NOT NULL DEFAULT 1,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
+                    ) ENGINE=InnoDB
+                """)
+                conn.commit()
+                return True
+            
+            cursor.execute("SHOW COLUMNS FROM order_items")
+            columns = {column[0] for column in cursor.fetchall()}
+            required_columns = {'id', 'order_id', 'customer_name', 'phone', 'food_item', 'quantity'}
+            if not required_columns.issubset(columns):
+                missing = required_columns - columns
+                logger.info(f"Adding missing columns to order_items table: {missing}")
+                
+                # Add missing columns
+                if 'customer_name' in missing:
+                    cursor.execute("ALTER TABLE order_items ADD COLUMN customer_name VARCHAR(100)")
+                if 'phone' in missing:
+                    cursor.execute("ALTER TABLE order_items ADD COLUMN phone VARCHAR(20)")
+                
+                conn.commit()
+            return True
+    except Exception as e:
+        logger.error(f"Error verifying order_items table: {e}")
         return False
 
 def verify_feedback_table() -> bool:
@@ -180,8 +248,8 @@ def submit_customer_feedback(
         logger.error(f"Error submitting feedback: {str(e)}")
         return False, f"Failed to submit feedback: {str(e)}"
 
-def create_order(items: List[Tuple[str, int]]) -> Tuple[bool, str, Optional[int]]:
-    """Create a new order in the database"""
+def create_order(items: List[Tuple[str, int]], customer_name: str = None, phone_number: str = None) -> Tuple[bool, str, Optional[int]]:
+    """Create a new order in the database with optional customer info"""
     if not items:
         return False, "No items in order", None
 
@@ -199,9 +267,9 @@ def create_order(items: List[Tuple[str, int]]) -> Tuple[bool, str, Optional[int]
             for item_name, quantity in items:
                 clean_item_name = item_name.replace(' ', '_').lower().strip()
                 cursor.execute("""
-                    INSERT INTO order_items (order_id, food_item, quantity)
-                    VALUES (%s, %s, %s)
-                """, (order_id, clean_item_name, quantity))
+                    INSERT INTO order_items (order_id, customer_name, phone, food_item, quantity)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (order_id, customer_name, phone_number, clean_item_name, quantity))
 
             conn.commit()
             return True, "Order created successfully", order_id
@@ -257,8 +325,8 @@ def get_menu_item_details(item_name: str) -> Tuple[bool, Optional[Dict], str]:
                     WHERE name LIKE %s
                     ORDER BY 
                         CASE 
-                            WHEN name LIKE %s THEN 1  # Starts with
-                            WHEN name LIKE %s THEN 2  # Contains
+                            WHEN name LIKE %s THEN 1
+                            WHEN name LIKE %s THEN 2
                             ELSE 3
                         END
                     LIMIT 1
@@ -403,8 +471,8 @@ def parse_datetime_input(datetime_str: str) -> Tuple[Optional[datetime], Optiona
     # If all patterns fail, return error
     return None, "Unrecognized datetime format. Please use format like '10 Jan 25 10 PM' or '1/1/25 2 PM'"
 
-def create_reservation(guests: int, datetime_param: Union[str, dict, list]) -> Tuple[bool, str, Optional[int]]:
-    """Create a new reservation in the database"""
+def create_reservation(guests: int, datetime_param: Union[str, dict, list], customer_name: str = None, phone_number: str = None) -> Tuple[bool, str, Optional[int]]:
+    """Create a new reservation in the database with customer information"""
     try:
         if not verify_reservations_table():
             return False, "Reservations system unavailable", None
@@ -459,12 +527,14 @@ def create_reservation(guests: int, datetime_param: Union[str, dict, list]) -> T
                 # In production, you might want to return an error here
                 pass
             
-            # Insert new reservation
+            # Insert new reservation with customer info
             cursor.execute("""
                 INSERT INTO reservations 
-                (guests, reservation_date, reservation_time, status)
-                VALUES (%s, %s, %s, 'confirmed')
+                (customer_name, phone, guests, reservation_date, reservation_time, status)
+                VALUES (%s, %s, %s, %s, %s, 'confirmed')
             """, (
+                customer_name,
+                phone_number,
                 guests,
                 reservation_date,
                 reservation_time.strftime('%H:%M:%S')

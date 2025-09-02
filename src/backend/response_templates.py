@@ -451,7 +451,7 @@ def order_status_response(order: Dict) -> JSONResponse:
     
     status_msg = {
         'Pending': "⏳ Awaiting confirmation",
-        'Confirmed': "✅ Being prepared",
+        'Confirmed': "✅ Your order is confirmed",
         'Preparing': "👨‍🍳 Cooking in progress",
         'On the way': f"🛵 Out for delivery (ETA: {order['estimated_time']})",
         'Delivered': "🎉 Delivered",
