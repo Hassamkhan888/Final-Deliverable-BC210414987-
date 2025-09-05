@@ -42,7 +42,10 @@ By leveraging NLP, the bot delivers a seamless and smart experience, improving b
 
 🔹 1. Clone the Repository
 
-git clone [KarachiBites Chatbot GitHub](https://github.com/Hassamkhan888/Final-Deliverable-BC210414987-.git)
+ [KarachiBites Chatbot GitHub](https://github.com/Hassamkhan888/Final-Deliverable-BC210414987-.git)
+ 
+ git clone https://github.com/Hassamkhan888/Final-Deliverable-BC210414987-.git
+cd Final-Deliverable-BC210414987-
 
 
 🔹 2. Backend (FastAPI + MySQL)
