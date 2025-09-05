@@ -42,8 +42,7 @@ By leveraging NLP, the bot delivers a seamless and smart experience, improving b
 
 🔹 1. Clone the Repository
 
-git clone https://github.com/Hassamkhan888/Final-Deliverable-BC210414987-.git
-cd Final-Deliverable-BC210414987-
+[GitHub Repository](https://github.com/Hassamkhan888/Final-Deliverable-BC210414987-.git)
 
 
 🔹 2. Backend (FastAPI + MySQL)
