@@ -1,9 +1,13 @@
 🍽️ KarachiBites – Restaurant Chatbot (NLP-Powered Virtual Assistant)
 
 Welcome to the KarachiBites Chatbot Project! 🍔✨
-This AI-powered virtual assistant, built using Dialogflow, simulates a human-like waiter, making your dining experience interactive and convenient. It helps customers:
+This AI-powered virtual assistant, built using Dialogflow, simulates a human-like waiter, making your dining experience interactive and convenient.
+
+It helps customers:
 
 🥡 Place Food Orders
+
+🕰️ Check Order Status
 
 🍴 Browse the Menu
 
@@ -17,9 +21,11 @@ The chatbot enhances customer convenience while reducing staff workload, offerin
 
 🚀 Project Overview
 
-This is an NLP-based chatbot developed using Dialogflow and FastAPI, specifically designed for KarachiBites, a fictional restaurant. The chatbot assists users with various tasks:
+This is an NLP-based chatbot developed using Dialogflow + FastAPI + MySQL + Frontend (HTML/JS/React) for KarachiBites, a fictional restaurant.
 
-🍔 Ordering Food
+The chatbot assists users with:
+
+🍔 Ordering Food & Checking Status
 
 📜 Checking Menu Availability
 
@@ -29,115 +35,168 @@ This is an NLP-based chatbot developed using Dialogflow and FastAPI, specificall
 
 📝 Collecting Customer Feedback
 
-By leveraging natural language processing, the bot delivers a seamless, smart experience, improving both customer satisfaction and operational efficiency. 🧠💡
+By leveraging NLP, the bot delivers a seamless and smart experience, improving both customer satisfaction and operational efficiency. 🧠💡
 
 
 🛠️ Setup Instructions
 
-Follow these steps to run the KarachiBites Chatbot locally on your machine:
-
-Clone the Repository
+🔹 1. Clone the Repository
 
 git clone https://github.com/Hassamkhan888/Final-Deliverable-BC210414987-.git
 cd Final-Deliverable-BC210414987-
 
 
-Set Up the Python Environment
-
-Install the required libraries:
-
-pip install -r requirements.txt
 
 
-Configure the MySQL Database
+🔹 2. Backend (FastAPI + MySQL)
 
-Create a new MySQL database
+Create Python Environment
 
-Import the provided SQL schema
+python -m venv venv
 
-Update the database credentials in the backend code
+venv\Scripts\activate
 
-Integrate Dialogflow
+Resturant_db
 
-Import the Dialogflow agent (in .zip or .json format)
+Configure MySQL
 
-Set up intents and entities
+Create a database (e.g., karachibites_db)
 
-Generate a service account key for API communication
+Import the provided .sql schema
 
-Run the FastAPI Backend
-Start the backend server:
+Update credentials in backend code
 
-uvicorn app:app --reload
+Run FastAPI Backend
 
-Launch the Frontend
+uvicorn app:app --reload --port 5000
 
-Open the index.html file in your browser
 
-Or connect it to the FastAPI routes for full functionality
+3. Connect with Dialogflow
 
-Important: Ensure your Dialogflow webhook is pointing to your backend URL (local or deployed).
+Download the Agent ZIP
+
+👉 KarachiBites_Agent.zip
+
+Import in Dialogflow Console
+
+Go to Agent Settings → Export and Import → Restore from ZIP
+
+Upload the downloaded dialogflow_agent.zip
+
+Webhook Integration (ngrok)
+
+Start backend server on port 5000
+
+Run ngrok:
+
+Copy generated URL (e.g., https://abc123.ngrok.io)
+
+In Dialogflow → Fulfillment → Webhook, set URL:
+
+https://abc123.ngrok.io/webhook
+
+Save and enable ✅
+
+4. Frontend
+
+Open index.html in browser
+
+or
+
+Connect frontend to backend routes for dynamic functionality
+
+5. Admin Panel
+
+If admin panel is in /admin folder:
+
+Navigate to folder
+
+cd admin
+
+Install dependencies
+
+npm install
+
+Run development server
+
+npm run dev
+
+Open in browser
+
+http://localhost:3000
+
+Quick Demo Run
+
+For a fast demo:
+
+# Backend
+uvicorn app:app --reload --port 8000
+
+# Start ngrok (new terminal)
+ngrok http 8000
+
+# Admin Panel
+cd admin
+npm run dev
+
+
+Then:
+
+Import Dialogflow agent ZIP
+
+Set webhook to ngrok URL
+
+Open index.html or admin panel → start chatting 🎉
 
 🧠 How It Works
 
-User Interaction
-The customer talks to the chatbot through the website.
+User Interaction → customer chats on website
 
-Intent Detection
-Dialogflow detects user intent and extracts relevant information (e.g., food item or quantity).
+Intent Detection → Dialogflow extracts intent & entities
 
-Backend Processing
-Dialogflow sends a webhook request to the FastAPI backend, which processes the request and interacts with the MySQL database.
+Backend Processing → FastAPI + MySQL handle requests
 
-Response Handling
-A response is sent back to Dialogflow and displayed to the user in real-time.
+Response → Sent back to Dialogflow → shown to user
 
-💡 Chatbot Features
+💡 Features
 
-🍔 Menu Browsing: View the full menu with available items
+🍔 Menu Browsing
 
-🥡 Order Placement: Place orders directly through the chatbot
+🥡 Order Placement & Tracking
 
-🕰️ Order Tracking: Get real-time updates on order status
+📅 Table Booking
 
-📅 Table Booking: Reserve a table for dining in
+🤖 Support & FAQs
 
-🤖 Support & FAQs: Get instant support for common queries
+📝 Customer Feedback
 
-📝 Customer Feedback Collection: Share feedback after dining
+🎓 Reflection & Learning
 
-🎓 Reflection and Learning
+Through KarachiBites, I gained experience in:
 
-Through KarachiBites, I gained practical experience in the following:
+🤖 NLP with Dialogflow
 
-🤖 Natural Language Processing with Dialogflow
+⚙️ Backend with FastAPI
 
-⚙️ Backend Development with FastAPI
+🗄️ Database Integration with MySQL
 
-🗄️ Database Integration using MySQL
+🌐 Frontend (HTML/CSS/JS) + Admin Dashboard
 
-🌐 Frontend Design with HTML, CSS, and JavaScript
-
-🔄 Real-time API Interaction for seamless communication
-
-This project significantly enhanced my understanding of:
-
-Human-computer interaction through conversational AI
-
-Automation of customer service with AI
-
-Restaurant workflow and logic
+🔄 Real-time API communication
 
 🔮 Future Improvements
 
-🗣️ Voice-Based Chatbot Interaction: Allow voice commands for hands-free interaction
+🗣️ Voice-Based Interaction
 
-📊 Admin Dashboard: A dashboard for restaurant staff to manage orders, tables, and feedback
+📊 Admin Dashboard Enhancements
 
-🍽️ AI-Based Food Recommendations: Suggest personalized food options based on customer preferences
+🍽️ AI-Based Food Recommendations
 
-📈 Advanced Feedback Analytics: Better analytics and reporting on customer feedback for restaurant improvement
+📈 Advanced Feedback Analytics
 
+📌 Repository Link
+
+👉 KarachiBites Chatbot GitHub
 📌 Repository Link
 
 KarachiBites Chatbot GitHub: https://github.com/Hassamkhan888/Final-Deliverable-BC210414987-
