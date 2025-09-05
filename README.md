@@ -127,10 +127,10 @@ Quick Demo Run
 For a fast demo:
 
 # Backend
-uvicorn app:app --reload --port 8000
+uvicorn app:app --reload --port 5000
 
 # Start ngrok (new terminal)
-ngrok http 8000
+ngrok http 5000
 
 # Admin Panel
 cd admin
@@ -224,14 +224,3 @@ Here are some screenshots of the KarachiBites Chatbot in action:
 ![image](https://github.com/user-attachments/assets/c6490aae-c495-46e7-8285-1359116a1546)
 
 ![image](https://github.com/user-attachments/assets/106c9aad-548a-4ac9-894b-ff85d68cdad9)
-
-
-
-
-
-
-
-
-
-
-
